@@ -6,13 +6,16 @@ mus_intronoise = love.audio.newSource('music/mus_intronoise.ogg','stream')
 splash =love.graphics.newImage("images/intros/splash.png")
 local Timers = require "timer"
 local intro = require "intro"
+local controls = require "controlsintro"
+local topscreenname = require "topscreenname"
 local firstime = true
 local uwu = true
+local gotokey = false
 local splashmenu = false
+local showcontrols = false
 local profiler_activated = false
 local show = false
-local name = "0"
-local starttimer = false
+local name = ""
 local done = false
 isinwarningmenu = false
 universalTimer = Timers:new() --5.2
@@ -27,17 +30,18 @@ end
 
 function love.update(dt)
    intro.update(dt)
+   if gotokey then
+      topscreenname.update(dt)
+      splashtimer:start()
+   end
    if universalTimer:check() and universalTimer:check() >= 5.2 then
       show = true
    end
-   if splashtimer:check() and splashtimer:check() >=2.6 then
-      done = true
-   end
-   if starttimer == true then
-      splashtimer:start()
+   if splashtimer:check() and splashtimer:check() >=2 and name == "" then
+      love.keyboard.setTextInput({hint = "Name the fallen human."})
    end
    if firstime and done then
-      love.keyboard.setTextInput({hint = "Enter your character's name."})
+      showcontrols = true
    end
    state, percent, seconds = love.system.getPowerInfo( )
    if isinwarningmenu then
@@ -56,12 +60,18 @@ end
 
 function love.draw(screen)
    intro.draw(screen)
+   if gotokey then
+      topscreenname.draw(screen)
+   end
    if screen == "bottom" and profiler_activated then
       love.graphics.setFont(detersmall)
       love.graphics.print("BC:".. tostring(isinwarningmenu),65,15)
-      love.graphics.print("Done:".. tostring(done),115,15)
+      love.graphics.print("Name:".. tostring(name),115,15)
       love.graphics.print("RAM: " .. math.floor(collectgarbage("count")) .. " KB / 128000 KB")
       love.graphics.print("Batt: "..percent.."%",0,15)
+   end
+   if showcontrols and screen ~= "bottom" then
+      controls.draw(screen)
    end
    if splashmenu and screen ~= "bottom" then
       love.graphics.draw(splash,40,77)
@@ -95,9 +105,15 @@ function love.gamepadpressed(joystick, button)
       if not isinwarningmenu then
          splashmenu = true
       end
-   elseif button == "a" and show and splashmenu then
+   elseif button == "a" and splashmenu then
       splashmenu = false
-      starttimer = true
+      done = true
+   elseif button == "a" and done then
+      showcontrols = false
+      done = false
+      gotokey = true
+   elseif button == "back" then
+      love.event.quit()
    end
    if profiler_activated and button == button_combination[1] then
       profiler_activated = false
