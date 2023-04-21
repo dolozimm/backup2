@@ -1,4 +1,5 @@
 # backup2
+sim, o codigo ta uma merda e eu arrumo depois
 Certa noite em Campo Grande
 Eu dei a maior trepada
 Com uma linda cuiabana
